@@ -12,7 +12,7 @@ server.use(express.json());
 const PORT = process.env.PORT || 3030
 
 
-mongoose.connect('mongodb://localhost:27017/books', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 
@@ -86,7 +86,7 @@ server.listen(PORT, () => {
 server.get('/books', getbooksHandler);
 server.post('/addBooks', postNewBook);
 server.delete('/delBooks', deleteBook);
-
+server.put('/editBooks/:index', updatebook);
 function getbooksHandler(req, res) {
     let requestedemail = req.query.email
     userModel.find({ email: requestedemail }, function (err, ownerData) {
@@ -144,7 +144,7 @@ function deleteBook(req, res) {
                     return item;
                 }
 
-               
+
 
 
             })
@@ -155,5 +155,31 @@ function deleteBook(req, res) {
 
 
     })
+
+}
+
+
+
+
+function updatebook(req, res) {
+    const { email, name, description, status } = req.body;
+    const index = Number(req.params.index);
+    console.log(req.body.status)
+    userModel.findOne({ email: email }, (error, ownerData) => {
+        console.log('test', ownerData);
+
+        ownerData.books.splice(index, 1, {
+            name: name,
+            description: description,
+            status: status
+
+        })
+        console.log('test', ownerData);
+        ownerData.save();
+        res.send(ownerData.books)
+    })
+
+
+
 
 }
